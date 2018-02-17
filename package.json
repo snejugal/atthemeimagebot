@@ -1,0 +1,14 @@
+{
+  "name": "atthemeimagebot",
+  "version": "1.1.0",
+  "main": "index.js",
+  "author": "Snejugal <contact@snejugal.ru> (https://snejugal.ru)",
+  "license": "MIT",
+  "dependencies": {
+    "request": "^2.83.0",
+    "request-promise": "^4.2.2",
+    "telegraf": "^3.17.2",
+    "attheme-js": "^1.1.1",
+    "jimp": "^0.2.28"
+  }
+}
