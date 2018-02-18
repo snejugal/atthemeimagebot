@@ -8,6 +8,8 @@ const en = {
     (themeName) => `Wallpaper of ${themeName}.jpg`,
   imageWithNoReply:
     () => `Ehm, if you want me to put a wallpaper inside a theme, you should reply to the message with that theme.`,
+  noThemeInReply:
+    () => `Hmm, doesn't seem the message you replied to has a theme. Try again.`,
   startMessage:
     () => `Hello! I'm a bot that can extract images from Android Telegram themes or put them. Just send me one, I'll send back the wallpaper.`,
   themeCaption:

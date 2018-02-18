@@ -91,6 +91,8 @@ bot.on(`document`, async (context) => {
       !message.reply_to_message.document.file_name.endsWith(`.attheme`)
     ) {
       context.reply(localization.en.noThemeInReply(), context.MARKDOWN);
+      uploadStatus.stop();
+      return;
     }
 
     const themeContent = (await context.downloadFile(true)).toString(`binary`);
@@ -113,6 +115,7 @@ bot.on(`document`, async (context) => {
     } else {
       context.reply(localization.en.unknownFileExtension());
 
+      uploadStatus.stop();
       return;
     }
 
@@ -160,6 +163,7 @@ bot.on(`photo`, async (context) => {
 
   if (
     `reply_to_message` in message &&
+    `document` in message.reply_to_message &&
     message.reply_to_message.document.file_name.endsWith(`.attheme`)
   ) {
     const themeContent = (await context.downloadFile(true)).toString(`binary`);
