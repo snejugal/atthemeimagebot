@@ -125,7 +125,7 @@ bot.on(`document`, async (context) => {
     context.replyWithDocument(
       {
         filename: message.reply_to_message.document.file_name,
-        source: Buffer.from(Attheme.asText(theme), `binary`),
+        source: Buffer.from(Attheme.asText(theme, `int`), `binary`),
       },
       { caption: localization.en.themeCaption() },
     );
@@ -176,7 +176,7 @@ bot.on(`photo`, async (context) => {
     context.replyWithDocument(
       {
         filename: message.reply_to_message.document.file_name,
-        source: Buffer.from(Attheme.asText(theme), `binary`),
+        source: Buffer.from(Attheme.asText(theme, `int`), `binary`),
       },
       { caption: localization.en.themeCaption() },
     );
