@@ -27,7 +27,7 @@ version = "0.1.0"
 dependencies = [
  "attheme 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "image 0.21.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "tbot 0.1.0 (git+https://gitlab.com/snejugal/tbot)",
+ "tbot 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -948,8 +948,8 @@ dependencies = [
 
 [[package]]
 name = "tbot"
-version = "0.1.0"
-source = "git+https://gitlab.com/snejugal/tbot#c4f1dd15cb542222ac62a3e1ed074d4ee3e1e056"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "futures 0.1.28 (registry+https://github.com/rust-lang/crates.io-index)",
  "hyper 0.12.32 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1347,7 +1347,7 @@ dependencies = [
 "checksum stable_deref_trait 1.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "dba1a27d3efae4351c8051072d619e3ade2820635c3958d826bfea39d59b54c8"
 "checksum string 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "d24114bfcceb867ca7f71a0d3fe45d45619ec47a6fbfa98cb14e14250bfa5d6d"
 "checksum syn 0.15.39 (registry+https://github.com/rust-lang/crates.io-index)" = "b4d960b829a55e56db167e861ddb43602c003c7be0bee1d345021703fac2fb7c"
-"checksum tbot 0.1.0 (git+https://gitlab.com/snejugal/tbot)" = "<none>"
+"checksum tbot 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "cb990f66223448eec84a2adc6232522f45609f296c9e934391a26c539b7c6f42"
 "checksum tempfile 3.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "7a6e24d9338a0a5be79593e2fa15a648add6138caa803e2d5bc782c371732ca9"
 "checksum tiff 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "1e4834f28a0330cb9f3f2c87d2649dca723cb33802e2bdcf18da32759fbec7ce"
 "checksum time 0.1.42 (registry+https://github.com/rust-lang/crates.io-index)" = "db8dcfca086c1143c9270ac42a2bbd8a7ee477b78ac8e45b19abfb0cbede4b6f"
