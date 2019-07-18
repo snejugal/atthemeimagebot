@@ -22,14 +22,18 @@ pub fn image_caption(user: &Option<User>) -> &'static str {
     match get_language(user) {
         Some("ru") => {
             "Вот обои!\n\n\
-        
-        Если хочешь поменять обои в теме, отправь картинку в ответ на свою тему."
+
+            Если хочешь поменять обои в теме, отправь картинку в ответ на свою тему."
         }
-        Some("fa") => "بفرما، اینم تصویر زمینه تم!",
+        Some("fa") => {
+            "بفرما، اینم تصویر زمینه تم!\n\n\
+
+            اگر میخوای پس زمینه رو تغییر بدی، یک تصویر در پاسخ به فایل تم بفرست."
+        }
         _ => {
             "Here's the wallpaper!\n\n\
-        
-        If you want to change the wallpaper, send a picture in reply to your theme."
+
+            If you want to change the wallpaper, send a picture in reply to your theme."
         }
     }
 }
@@ -37,7 +41,7 @@ pub fn image_caption(user: &Option<User>) -> &'static str {
 pub fn image_file_name(user: &Option<User>, theme_name: String) -> String {
     match get_language(user) {
         Some("ru") => format!("Обои из {}.jpg", theme_name),
-        Some("fa") => format!("تصویر زمینه ی {}.jpg", theme_name),
+        Some("fa") => format!("تصویر زمینه {}.jpg", theme_name),
         _ => format!("Wallpaper of {}.jpg", theme_name),
     }
 }
@@ -56,7 +60,7 @@ pub fn no_theme_in_reply(user: &Option<User>) -> &'static str {
             "Хм, кажется, что в сообщении, на которое ты ответил, нет темы. Попробуй снова."
         }
         Some("fa") => {
-            "هومم، بنظر میرسه پیام شما در پاسخ به فایل تم نیست! دوباره امحتان کن."
+            "هومم، به نظر میرسه پیام شما در پاسخ به فایل تم نیست! دوباره امحتان کن."
         }
         _ => "Hmm, doesn't seem the message you replied to has a theme. Try again.",
     }
@@ -65,7 +69,7 @@ pub fn no_theme_in_reply(user: &Option<User>) -> &'static str {
 pub fn start_message(user: &Option<User>) -> &'static str {
     match get_language(user) {
         Some("ru") => "Привет! Я — бот, который может вытаскивать обои из тем для Telegram на Android или ставить их. Просто отправь тему, а я отправлю обои.",
-        Some("fa") => "سلام! من یک ربات هستم که میتونم تصاویر رو در تم های اندروید ایتا استخراج کنم و یا تصویر زمینه ای رو در تم ها قرار بدم. فقط کافیه یک تم به من ارسال کنی، بعدش من تصویر زمینه ی تم رو بهتون میفرستم.",
+        Some("fa") => "سلام! من یک ربات هستم که میتونم تصاویر رو در تم های اندروید تلگرام استخراج کنم و یا تصویر زمینه ای رو در تم ها قرار بدم. فقط کافیه یک تم به من ارسال کنی، بعدش من تصویر زمینه ی تم رو بهتون میفرستم.",
         _ => "Hello! I'm a bot that can extract images from Android Telegram themes or put them. Just send me one, I'll send back the wallpaper.",
     }
 }
@@ -91,7 +95,7 @@ pub fn theme_with_no_image(user: &Option<User>) -> &'static str {
 pub fn unknown_file_extension(user: &Option<User>) -> &'static str {
     match get_language(user) {
         Some("ru") => "Хм, я не знаю такую такое расширение темы или картинки. У тем должно быть расширение `.attheme`, у картинок — `jpg`, `png`, `bmp`, `tiff` или `webp`.",
-        Some("fa") => "من بعضی تمها یا فایلها و تصاویر رو نمیشناسم! فرمت فایلهای تم .athheme هست. فرمت تصاویر هم `jpg` و `png` و `bmp` و `tiff` و `webp` میتونم قبول کنم.",
+        Some("fa") => "من بعضی تمها یا فایلها و تصاویر رو نمیشناسم! فرمت فایلهای تم .attheme هست. فرمت تصاویر هم `jpg` و `png` و `bmp` و `tiff` و `webp` میتونم قبول کنم.",
         _ => "Hmm, I don't know such theme or image extension. For themes, it must be .attheme; for images, it must be `jpg`, `png`, `bmp`, `tiff`, `webp` file.",
     }
 }
