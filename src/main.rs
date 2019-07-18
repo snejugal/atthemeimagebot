@@ -8,7 +8,7 @@ use tbot::{
     connectors::Https,
     contexts,
     prelude::*,
-    types::{input_file, message, parameters::Text, Document},
+    types::{file::id::AsFileId, input_file, message, parameters::Text, Document},
     Bot,
 };
 
@@ -16,7 +16,7 @@ const SUPPORTED_EXTENSIONS: [&str; 6] = ["png", "jpg", "jpeg", "bmp", "tiff", "w
 
 fn download_document(
     bot: &Arc<Bot<Https>>,
-    document: &Document,
+    document: &impl AsFileId,
 ) -> impl Future<Item = Vec<u8>, Error = ()> {
     let bot = Arc::clone(bot);
 
@@ -32,58 +32,117 @@ fn download_document(
         })
 }
 
-fn set_wallpaper(context: &contexts::Document<Https>, document: &Document) {
-    let bot = Arc::clone(&context.bot);
-    let chat_id = context.chat.id;
-    let reply_id = context.message_id;
-    let theme_name = match &document.file_name {
-        Some(filename) => filename.clone(),
-        None => return,
-    };
-    let theme_caption = Text::markdown(&theme_caption(&context.from));
+macro_rules! set_wallpaper {
+    ($context:ident, $image:ident, $theme:ident) => {
+        let bot = Arc::clone(&$context.bot);
+        let chat_id = $context.chat.id;
+        let reply_id = $context.message_id;
+        let theme_name = match &$theme.file_name {
+            Some(filename) => filename.clone(),
+            None => return,
+        };
+        let theme_caption = Text::markdown(&theme_caption(&$context.from));
 
-    let download_image = download_document(&context.bot, &context.document);
-    let download_theme = download_document(&context.bot, document);
+        let download_image = download_document(&$context.bot, $image);
+        let download_theme = download_document(&$context.bot, $theme);
 
-    let download = download_image
-        .join(download_theme)
-        .map(move |(image, theme)| {
-            let mut theme = Attheme::from_bytes(&theme);
+        let download = download_image
+            .join(download_theme)
+            .map(move |(image, theme)| {
+                let mut theme = Attheme::from_bytes(&theme);
 
-            let image = match image::load_from_memory(&image) {
-                Ok(image) => image,
-                Err(err) => {
-                    dbg!(err);
+                let image = match image::load_from_memory(&image) {
+                    Ok(image) => image,
+                    Err(err) => {
+                        dbg!(err);
+                        return;
+                    }
+                };
+
+                let mut wallpaper = Vec::new();
+
+                if let Err(error) = image.write_to(&mut wallpaper, JPEG(255)) {
+                    eprintln!("Error while writing to wallpaper: {:#?}", error);
                     return;
                 }
-            };
 
-            let mut wallpaper = Vec::new();
+                theme.variables.remove("chat_wallpaper");
+                theme.wallpaper = Some(wallpaper);
 
-            if let Err(error) = image.write_to(&mut wallpaper, JPEG(255)) {
-                eprintln!("Error while writing to wallpaper: {:#?}", error);
+                let reply = bot
+                    .send_document(
+                        chat_id,
+                        input_file::Document::bytes(&theme_name, &theme.to_bytes(Hex))
+                            .caption(theme_caption),
+                    )
+                    .reply_to_message_id(reply_id)
+                    .into_future()
+                    .map_err(|err| {
+                        dbg!(err);
+                    });
+
+                tbot::spawn(reply);
+            });
+
+        tbot::spawn(download);
+    };
+}
+
+macro_rules! get_document {
+    ($context: ident) => {{
+        let context = $context;
+        let reply_to = match &context.reply_to {
+            Some(reply_to) => reply_to,
+            None => {
+                let reply = context
+                    .send_message_in_reply(Text::markdown(image_with_no_reply(&context.from)))
+                    .into_future()
+                    .map_err(|err| {
+                        dbg!(err);
+                    });
+
+                tbot::spawn(reply);
                 return;
             }
+        };
 
-            theme.variables.remove("chat_wallpaper");
-            theme.wallpaper = Some(wallpaper);
-
-            let reply = bot
-                .send_document(
-                    chat_id,
-                    input_file::Document::bytes(&theme_name, &theme.to_bytes(Hex))
-                        .caption(theme_caption),
-                )
-                .reply_to_message_id(reply_id)
+        let no_theme_in_reply = || {
+            let reply = context
+                .send_message_in_reply(Text::markdown(no_theme_in_reply(&context.from)))
                 .into_future()
                 .map_err(|err| {
                     dbg!(err);
                 });
 
             tbot::spawn(reply);
-        });
+        };
 
-    tbot::spawn(download);
+        let document = match &reply_to.kind {
+            message::Kind::Document(document, ..) => document,
+            _ => {
+                no_theme_in_reply();
+                return;
+            }
+        };
+
+        let filename = match &document.file_name {
+            Some(filename) => filename,
+            None => return,
+        };
+
+        let path = Path::new(&filename);
+        let extension: String = match path.extension() {
+            Some(extension) => extension.to_string_lossy().to_string(),
+            None => "".into(),
+        };
+
+        if extension != "attheme" {
+            no_theme_in_reply();
+            return;
+        }
+
+        document
+    }};
 }
 
 fn extract_wallpaper(context: &contexts::Document<Https>, document: &Document) {
@@ -175,57 +234,10 @@ fn main() {
         }
 
         if SUPPORTED_EXTENSIONS.contains(&extension.as_str()) {
-            let reply_to = match &context.reply_to {
-                Some(reply_to) => reply_to,
-                None => {
-                    let reply = context
-                        .send_message_in_reply(Text::markdown(image_with_no_reply(&context.from)))
-                        .into_future()
-                        .map_err(|err| {
-                            dbg!(err);
-                        });
+            let document = get_document!(context);
+            let image = &context.document;
 
-                    tbot::spawn(reply);
-                    return;
-                }
-            };
-
-            let no_theme_in_reply = || {
-                let reply = context
-                    .send_message_in_reply(Text::markdown(no_theme_in_reply(&context.from)))
-                    .into_future()
-                    .map_err(|err| {
-                        dbg!(err);
-                    });
-
-                tbot::spawn(reply);
-            };
-
-            let document = match &reply_to.kind {
-                message::Kind::Document(document, ..) => document,
-                _ => {
-                    no_theme_in_reply();
-                    return;
-                }
-            };
-
-            let filename = match &document.file_name {
-                Some(filename) => filename,
-                None => return,
-            };
-
-            let path = Path::new(&filename);
-            let extension: String = match path.extension() {
-                Some(extension) => extension.to_string_lossy().to_string(),
-                None => "".into(),
-            };
-
-            if extension != "attheme" {
-                no_theme_in_reply();
-                return;
-            }
-
-            set_wallpaper(&context, &document);
+            set_wallpaper!(context, image, document);
             return;
         }
 
@@ -237,6 +249,13 @@ fn main() {
             });
 
         tbot::spawn(reply);
+    });
+
+    bot.photo(|context| {
+        let document = get_document!(context);
+        let image = context.photo.last().unwrap();
+
+        set_wallpaper!(context, image, document);
     });
 
     bot.polling().start();
