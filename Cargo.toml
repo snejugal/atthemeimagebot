@@ -4,9 +4,7 @@ version = "0.1.0"
 authors = ["AlexStrNik <alex.str.nik@gmail.com>"]
 edition = "2018"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
-tbot = "0.1.1"
+tbot = "0.2"
 attheme = "0.2.2"
 image = "0.21"
