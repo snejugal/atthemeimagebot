@@ -6,5 +6,5 @@ edition = "2018"
 
 [dependencies]
 tbot = "0.2"
-attheme = "0.2.2"
+attheme = "0.3"
 image = "0.21"
