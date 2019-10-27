@@ -75,7 +75,9 @@ pub fn start_message(user: Option<&User>) -> &'static str {
 pub fn theme_caption(user: Option<&User>) -> &'static str {
     match get_language(user) {
         Some("ru") => "Классные обои, поставил их в тему!",
-        Some("fa") => "تصویر زمینه مناسبیه! من این تصویر زمینه رو در تم قرار دادم!",
+        Some("fa") => {
+            "تصویر زمینه مناسبیه! من این تصویر زمینه رو در تم قرار دادم!"
+        }
         Some("en") | _ => "Nice wallpaper, I've added it to the theme!",
     }
 }

@@ -11,20 +11,28 @@ use tbot::{
         fields::{MediaMessage, Message},
     },
     prelude::*,
-    types::{file::id::AsFileId, input_file, message, parameters::Text, Document},
+    types::{
+        file::id::AsFileId, input_file, message, parameters::Text, Document,
+    },
     Bot,
 };
 
-const SUPPORTED_EXTENSIONS: [&str; 6] = ["png", "jpg", "jpeg", "bmp", "tiff", "webp"];
+const SUPPORTED_EXTENSIONS: [&str; 6] =
+    ["png", "jpg", "jpeg", "bmp", "tiff", "webp"];
 
 type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
-async fn download(bot: &Bot<Https>, file: &impl AsFileId) -> Result<Vec<u8>, Error> {
+async fn download(
+    bot: &Bot<Https>,
+    file: &impl AsFileId,
+) -> Result<Vec<u8>, Error> {
     let file = bot.get_file(file).call().await?;
     Ok(bot.download_file(&file).await?)
 }
 
-async fn extract_wallpaper(context: &contexts::Document<Https>) -> Result<(), Error> {
+async fn extract_wallpaper(
+    context: &contexts::Document<Https>,
+) -> Result<(), Error> {
     let theme_name = match &context.document.file_name {
         Some(theme_name) => theme_name,
         None => Err("No name in document")?,
@@ -34,13 +42,18 @@ async fn extract_wallpaper(context: &contexts::Document<Https>) -> Result<(), Er
     let theme = Attheme::from_bytes(&bytes);
 
     if let Some(image) = theme.wallpaper {
-        let file_name = localization::image_file_name(context.from.as_ref(), theme_name);
-        let caption = Text::markdown(localization::image_caption(context.from.as_ref()));
-        let wallpaper = input_file::Document::bytes(&file_name, &image).caption(caption);
+        let file_name =
+            localization::image_file_name(context.from.as_ref(), theme_name);
+        let caption =
+            Text::markdown(localization::image_caption(context.from.as_ref()));
+        let wallpaper =
+            input_file::Document::bytes(&file_name, &image).caption(caption);
 
         context.send_document_in_reply(wallpaper).call().await?;
     } else {
-        let error_text = Text::markdown(localization::theme_with_no_image(context.from.as_ref()));
+        let error_text = Text::markdown(localization::theme_with_no_image(
+            context.from.as_ref(),
+        ));
         context.send_message_in_reply(error_text).call().await?;
     }
 
@@ -48,7 +61,8 @@ async fn extract_wallpaper(context: &contexts::Document<Https>) -> Result<(), Er
 }
 
 async fn no_theme_in_reply(context: &impl Message<Https>) {
-    let error_text = Text::markdown(localization::no_theme_in_reply(context.from()));
+    let error_text =
+        Text::markdown(localization::no_theme_in_reply(context.from()));
     let result = context.send_message_in_reply(error_text).call().await;
     if let Err(err) = result {
         dbg!(err);
@@ -59,7 +73,9 @@ async fn get_document(context: &impl MediaMessage<Https>) -> Option<&Document> {
     let reply_to = match context.reply_to() {
         Some(reply_to) => reply_to,
         None => {
-            let error_text = Text::markdown(localization::image_with_no_reply(context.from()));
+            let error_text = Text::markdown(localization::image_with_no_reply(
+                context.from(),
+            ));
             let result = context.send_message_in_reply(error_text).call().await;
             if let Err(err) = result {
                 dbg!(err);
@@ -85,7 +101,11 @@ async fn get_document(context: &impl MediaMessage<Https>) -> Option<&Document> {
     }
 }
 
-async fn set_wallpaper<C, I>(context: &C, image: &I, theme: &Document) -> Result<(), Error>
+async fn set_wallpaper<C, I>(
+    context: &C,
+    image: &I,
+    theme: &Document,
+) -> Result<(), Error>
 where
     C: Message<Https>,
     I: AsFileId,
@@ -118,7 +138,8 @@ where
 }
 
 async fn start(context: Arc<contexts::Text<Https>>) {
-    let message = Text::markdown(localization::start_message(context.from.as_ref()));
+    let message =
+        Text::markdown(localization::start_message(context.from.as_ref()));
     let result = context.send_message(message).call().await;
     if let Err(err) = result {
         dbg!(err);
@@ -126,7 +147,8 @@ async fn start(context: Arc<contexts::Text<Https>>) {
 }
 
 async fn help(context: Arc<contexts::Text<Https>>) {
-    let message = Text::markdown(localization::help_message(context.from.as_ref()));
+    let message =
+        Text::markdown(localization::help_message(context.from.as_ref()));
     let result = context.send_message(message).call().await;
     if let Err(err) = result {
         dbg!(err);
@@ -142,8 +164,9 @@ async fn document(context: Arc<contexts::Document<Https>>) {
     let extension = match path.extension() {
         Some(extension) => extension.to_string_lossy().to_lowercase(),
         None => {
-            let error_text =
-                Text::markdown(localization::unknown_file_extension(context.from.as_ref()));
+            let error_text = Text::markdown(
+                localization::unknown_file_extension(context.from.as_ref()),
+            );
             let result = context.send_message_in_reply(error_text).call().await;
             if let Err(err) = result {
                 dbg!(err);
