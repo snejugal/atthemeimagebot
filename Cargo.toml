@@ -5,6 +5,11 @@ authors = ["AlexStrNik <alex.str.nik@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-tbot = "0.2"
+tbot = { git = "https://gitlab.com/SnejUgal/tbot.git" }
+tokio = "0.2.0-alpha.6" # workaround to make #[tbot::main] working
 attheme = "0.3"
 image = "0.21"
+
+[dependencies.futures-util-preview]
+version = "0.3.0-alpha.19"
+features = ["join-macro"]
