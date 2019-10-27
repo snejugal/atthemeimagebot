@@ -8,7 +8,7 @@ edition = "2018"
 tbot = { git = "https://gitlab.com/SnejUgal/tbot.git" }
 tokio = "0.2.0-alpha.6" # workaround to make #[tbot::main] working
 attheme = "0.3"
-image = "0.21"
+image = "0.22"
 
 [dependencies.futures-util-preview]
 version = "0.3.0-alpha.19"
