@@ -127,6 +127,7 @@ where
     image.write_to(&mut wallpaper, JPEG(255))?;
 
     theme.variables.remove("chat_wallpaper");
+    theme.variables.remove("chat_wallpaper_gradient_to");
     theme.wallpaper = Some(wallpaper);
 
     let caption = Text::markdown(&localization::theme_caption(context.from()));
