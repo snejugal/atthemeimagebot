@@ -1,6 +1,7 @@
 mod localization;
 
 use attheme::{Attheme, ColorSignature::Hex};
+use dotenv::dotenv;
 use image::ImageOutputFormat::JPEG;
 use std::{path::Path, sync::Arc};
 use tbot::{
@@ -222,12 +223,17 @@ async fn photo<C: Connector>(context: Arc<contexts::Photo<C>>) {
 
 #[tokio::main]
 async fn main() {
-    let mut bot = tbot::from_env!("BOT_TOKEN").event_loop();
+    let _ = dotenv();
+    let mut bot = Bot::from_env("BOT_TOKEN").event_loop();
 
     bot.start(start);
     bot.help(help);
     bot.document(document);
     bot.photo(photo);
 
-    bot.polling().start().await.unwrap();
+    if let Ok(url) = std::env::var("WEBHOOK_URL") {
+        bot.webhook(&url, 5001).http().start().await.unwrap();
+    } else {
+        bot.polling().start().await.unwrap();
+    }
 }

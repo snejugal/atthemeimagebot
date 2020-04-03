@@ -5,6 +5,7 @@ authors = ["AlexStrNik <alex.str.nik@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+dotenv = "0.15"
 tbot = { version = "0.5", default-features = false, features = ["rustls"] }
 tokio = { version = "0.2", features = ["macros"] }
 lazy_static = "1.4"
