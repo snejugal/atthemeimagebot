@@ -5,7 +5,6 @@ use dotenv::dotenv;
 use image::ImageOutputFormat::JPEG;
 use std::{path::Path, sync::Arc};
 use tbot::{
-    connectors::Connector,
     contexts::{
         self,
         fields::{MediaMessage, Message},
@@ -21,134 +20,24 @@ const SUPPORTED_EXTENSIONS: [&str; 6] =
 
 type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
-async fn download<C, F>(bot: &Bot<C>, file: &F) -> Result<Vec<u8>, Error>
-where
-    C: Connector,
-    F: AsFileId,
-{
-    let file = bot.get_file(file).call().await?;
-    Ok(bot.download_file(&file).await?)
-}
+#[tokio::main]
+async fn main() {
+    let _ = dotenv();
+    let mut bot = Bot::from_env("BOT_TOKEN").event_loop();
 
-async fn extract_wallpaper<C>(
-    context: &contexts::Document<C>,
-) -> Result<(), Error>
-where
-    C: Connector,
-{
-    let theme_name = match &context.document.file_name {
-        Some(theme_name) => theme_name,
-        None => Err("No name in document")?,
-    };
+    bot.start(start);
+    bot.help(help);
+    bot.document(document);
+    bot.photo(photo);
 
-    let bytes = download(&context.bot, &context.document).await?;
-    let theme = Attheme::from_bytes(&bytes);
-
-    if let Some(image) = theme.wallpaper {
-        let file_name =
-            localization::image_file_name(context.from.as_ref(), theme_name);
-        let caption = localization::image_caption(context.from.as_ref());
-        let wallpaper =
-            input_file::Document::bytes(&file_name, &image).caption(caption);
-
-        context.send_document_in_reply(wallpaper).call().await?;
+    if let Ok(url) = std::env::var("WEBHOOK_URL") {
+        bot.webhook(&url, 5001).http().start().await.unwrap();
     } else {
-        let error_text =
-            localization::theme_with_no_image(context.from.as_ref());
-        context.send_message_in_reply(error_text).call().await?;
-    }
-
-    Ok(())
-}
-
-async fn no_theme_in_reply<Ctx, Con>(context: &Ctx)
-where
-    Ctx: Message<Con>,
-    Con: Connector,
-{
-    let error_text = localization::no_theme_in_reply(context.from());
-    let result = context.send_message_in_reply(error_text).call().await;
-    if let Err(err) = result {
-        dbg!(err);
+        bot.polling().start().await.unwrap();
     }
 }
 
-async fn get_document<Ctx, Con>(context: &Ctx) -> Option<&Document>
-where
-    Ctx: MediaMessage<Con>,
-    Con: Connector,
-{
-    let reply_to = match context.reply_to() {
-        Some(reply_to) => reply_to,
-        None => {
-            let error_text = localization::image_with_no_reply(context.from());
-            let result = context.send_message_in_reply(error_text).call().await;
-            if let Err(err) = result {
-                dbg!(err);
-            }
-            return None;
-        }
-    };
-
-    let document = match &reply_to.kind {
-        message::Kind::Document(document, ..) => document,
-        _ => {
-            no_theme_in_reply(context).await;
-            return None;
-        }
-    };
-
-    let file_name = document.file_name.as_ref()?;
-    if Path::new(&file_name).extension().map(|x| x == "attheme") == Some(true) {
-        Some(document)
-    } else {
-        no_theme_in_reply(context).await;
-        None
-    }
-}
-
-async fn set_wallpaper<Ctx, Con, I>(
-    context: &Ctx,
-    image: &I,
-    theme: &Document,
-) -> Result<(), Error>
-where
-    Ctx: Message<Con>,
-    Con: Connector,
-    I: AsFileId,
-{
-    let name = match &theme.file_name {
-        Some(name) => name,
-        None => Err("Document without a name")?,
-    };
-
-    let (image, theme) = try_join!(
-        download(context.bot(), image),
-        download(context.bot(), theme),
-    )?;
-
-    let mut theme = Attheme::from_bytes(&theme[..]);
-    let image = image::load_from_memory(&image[..])?;
-
-    let mut wallpaper = Vec::new();
-    image.write_to(&mut wallpaper, JPEG(255))?;
-
-    theme.variables.remove("chat_wallpaper");
-    theme.variables.remove("chat_wallpaper_gradient_to");
-    theme.wallpaper = Some(wallpaper);
-
-    let caption = localization::theme_caption(context.from());
-    let bytes = theme.to_bytes(Hex);
-    let new_theme = input_file::Document::bytes(&name, &bytes).caption(caption);
-    context.send_document_in_reply(new_theme).call().await?;
-
-    Ok(())
-}
-
-async fn start<C>(context: Arc<contexts::Command<contexts::Text<C>>>)
-where
-    C: Connector,
-{
+async fn start(context: Arc<contexts::Command<contexts::Text>>) {
     let message = localization::start_message(context.from.as_ref());
     let result = context.send_message(message).call().await;
     if let Err(err) = result {
@@ -156,10 +45,7 @@ where
     }
 }
 
-async fn help<C>(context: Arc<contexts::Command<contexts::Text<C>>>)
-where
-    C: Connector,
-{
+async fn help(context: Arc<contexts::Command<contexts::Text>>) {
     let message = localization::help_message(context.from.as_ref());
     let result = context.send_message(message).call().await;
     if let Err(err) = result {
@@ -167,7 +53,7 @@ where
     }
 }
 
-async fn document<C: Connector>(context: Arc<contexts::Document<C>>) {
+async fn document(context: Arc<contexts::Document>) {
     let file_name = match &context.document.file_name {
         Some(name) => name,
         None => return,
@@ -208,7 +94,7 @@ async fn document<C: Connector>(context: Arc<contexts::Document<C>>) {
     }
 }
 
-async fn photo<C: Connector>(context: Arc<contexts::Photo<C>>) {
+async fn photo(context: Arc<contexts::Photo>) {
     let document = match get_document(&*context).await {
         Some(document) => document,
         None => return,
@@ -221,19 +107,104 @@ async fn photo<C: Connector>(context: Arc<contexts::Photo<C>>) {
     }
 }
 
-#[tokio::main]
-async fn main() {
-    let _ = dotenv();
-    let mut bot = Bot::from_env("BOT_TOKEN").event_loop();
+async fn get_document(context: &impl MediaMessage) -> Option<&Document> {
+    let reply_to = match context.reply_to() {
+        Some(reply_to) => reply_to,
+        None => {
+            let error_text = localization::image_with_no_reply(context.from());
+            let result = context.send_message_in_reply(error_text).call().await;
+            if let Err(err) = result {
+                dbg!(err);
+            }
+            return None;
+        }
+    };
 
-    bot.start(start);
-    bot.help(help);
-    bot.document(document);
-    bot.photo(photo);
+    let document = match &reply_to.kind {
+        message::Kind::Document(document, ..) => document,
+        _ => {
+            no_theme_in_reply(context).await;
+            return None;
+        }
+    };
 
-    if let Ok(url) = std::env::var("WEBHOOK_URL") {
-        bot.webhook(&url, 5001).http().start().await.unwrap();
+    let file_name = document.file_name.as_ref()?;
+    if Path::new(&file_name).extension().map(|x| x == "attheme") == Some(true) {
+        Some(document)
     } else {
-        bot.polling().start().await.unwrap();
+        no_theme_in_reply(context).await;
+        None
+    }
+}
+
+async fn extract_wallpaper(context: &contexts::Document) -> Result<(), Error> {
+    let theme_name = match &context.document.file_name {
+        Some(theme_name) => theme_name,
+        None => Err("No name in document")?,
+    };
+
+    let bytes = download(&context.bot, &context.document).await?;
+    let theme = Attheme::from_bytes(&bytes);
+
+    if let Some(image) = theme.wallpaper {
+        let file_name =
+            localization::image_file_name(context.from.as_ref(), theme_name);
+        let caption = localization::image_caption(context.from.as_ref());
+        let wallpaper =
+            input_file::Document::bytes(&file_name, &image).caption(caption);
+
+        context.send_document_in_reply(wallpaper).call().await?;
+    } else {
+        let error_text =
+            localization::theme_with_no_image(context.from.as_ref());
+        context.send_message_in_reply(error_text).call().await?;
+    }
+
+    Ok(())
+}
+
+async fn download(bot: &Bot, file: &impl AsFileId) -> Result<Vec<u8>, Error> {
+    let file = bot.get_file(file).call().await?;
+    Ok(bot.download_file(&file).await?)
+}
+
+async fn set_wallpaper(
+    context: &impl Message,
+    image: &impl AsFileId,
+    theme: &Document,
+) -> Result<(), Error> {
+    let name = match &theme.file_name {
+        Some(name) => name,
+        None => Err("Document without a name")?,
+    };
+
+    let (image, theme) = try_join!(
+        download(context.bot(), image),
+        download(context.bot(), theme),
+    )?;
+
+    let mut theme = Attheme::from_bytes(&theme[..]);
+    let image = image::load_from_memory(&image[..])?;
+
+    let mut wallpaper = Vec::new();
+    image.write_to(&mut wallpaper, JPEG(255))?;
+
+    theme.variables.remove("chat_wallpaper");
+    theme.variables.remove("chat_wallpaper_gradient_to");
+    theme.wallpaper = Some(wallpaper);
+
+    let caption = localization::theme_caption(context.from());
+    let bytes = theme.to_bytes(Hex);
+    let new_theme = input_file::Document::bytes(&name, &bytes).caption(caption);
+    context.send_document_in_reply(new_theme).call().await?;
+
+    Ok(())
+}
+
+async fn no_theme_in_reply(context: &impl Message) {
+    let error_text = localization::no_theme_in_reply(context.from());
+    let result = context.send_message_in_reply(error_text).call().await;
+    if let Err(err) = result {
+        dbg!(err);
     }
 }
