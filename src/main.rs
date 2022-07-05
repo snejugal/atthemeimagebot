@@ -2,7 +2,7 @@ mod localization;
 
 use attheme::{Attheme, ColorSignature::Hex};
 use dotenv::dotenv;
-use image::ImageOutputFormat::JPEG;
+use image::ImageOutputFormat::Jpeg;
 use std::{path::Path, sync::Arc};
 use tbot::{
     contexts::{
@@ -187,7 +187,7 @@ async fn set_wallpaper(
     let image = image::load_from_memory(&image[..])?;
 
     let mut wallpaper = Vec::new();
-    image.write_to(&mut wallpaper, JPEG(255))?;
+    image.write_to(&mut wallpaper, Jpeg(255))?;
 
     theme.variables.remove("chat_wallpaper");
     theme.variables.remove("chat_wallpaper_gradient_to");
