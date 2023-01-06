@@ -3,7 +3,7 @@ mod localization;
 use attheme::{Attheme, ColorSignature::Hex};
 use dotenv::dotenv;
 use image::ImageOutputFormat::Jpeg;
-use std::{path::Path, sync::Arc};
+use std::{env, path::Path, sync::Arc};
 use tbot::{
     contexts::{
         self,
@@ -30,8 +30,12 @@ async fn main() {
     bot.document(document);
     bot.photo(photo);
 
-    if let Ok(url) = std::env::var("WEBHOOK_URL") {
-        bot.webhook(&url, 5001).http().start().await.unwrap();
+    if let Ok(url) = env::var("WEBHOOK_URL") {
+        let port = env::var("WEBHOOK_PORT")
+            .ok()
+            .and_then(|x| x.parse().ok())
+            .expect("Specify WEBHOOK_PORT");
+        bot.webhook(&url, port).http().start().await.unwrap();
     } else {
         bot.polling().start().await.unwrap();
     }
