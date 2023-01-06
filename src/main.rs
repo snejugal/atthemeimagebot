@@ -154,8 +154,8 @@ async fn extract_wallpaper(context: &contexts::Document) -> Result<(), Error> {
         let file_name =
             localization::image_file_name(context.from.as_ref(), theme_name);
         let caption = localization::image_caption(context.from.as_ref());
-        let wallpaper =
-            input_file::Document::bytes(&file_name, &image).caption(caption);
+        let wallpaper = input_file::Document::with_bytes(&file_name, &image)
+            .caption(caption);
 
         context.send_document_in_reply(wallpaper).call().await?;
     } else {
@@ -199,7 +199,8 @@ async fn set_wallpaper(
 
     let caption = localization::theme_caption(context.from());
     let bytes = theme.to_bytes(Hex);
-    let new_theme = input_file::Document::bytes(&name, &bytes).caption(caption);
+    let new_theme =
+        input_file::Document::with_bytes(&name, &bytes).caption(caption);
     context.send_document_in_reply(new_theme).call().await?;
 
     Ok(())

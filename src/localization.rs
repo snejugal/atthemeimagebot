@@ -61,28 +61,28 @@ pub fn help_message(user: Option<&User>) -> Text<'_> {
     }
 
     match get_language(user) {
-        Some("ru") => Text::markdown_v2(&RUSSIAN),
-        Some("fa") => Text::markdown_v2(&PERSIAN),
-        Some("en") | _ => Text::markdown_v2(&ENGLISH),
+        Some("ru") => Text::with_markdown_v2(&RUSSIAN),
+        Some("fa") => Text::with_markdown_v2(&PERSIAN),
+        Some("en") | _ => Text::with_markdown_v2(&ENGLISH),
     }
 }
 
 pub fn image_caption(user: Option<&User>) -> Text<'_> {
     match get_language(user) {
-        Some("ru") => Text::plain(
-            "Вот обои!\n\n\
-
+        Some("ru") => Text::with_plain(
+            "Вот обои!\n\
+             \n\
              Если хочешь поменять обои в теме, отправь картинку в ответ \
              на свою тему.",
         ),
-        Some("fa") => Text::plain(
-            "بفرما، اینم تصویر زمینه تم!\n\n\
-
-            اگر میخوای پس زمینه رو تغییر بدی، یک تصویر در پاسخ به فایل تم بفرست.",
+        Some("fa") => Text::with_plain(
+            "بفرما، اینم تصویر زمینه تم!\n\
+             \n\
+             اگر میخوای پس زمینه رو تغییر بدی، یک تصویر در پاسخ به فایل تم بفرست.",
         ),
-        Some("en") | _ => Text::plain(
-            "Here's the wallpaper!\n\n\
-
+        Some("en") | _ => Text::with_plain(
+            "Here's the wallpaper!\n\n
+             \n\
              If you want to change the wallpaper, send a picture in reply \
              to your theme.",
         )
@@ -99,30 +99,30 @@ pub fn image_file_name(user: Option<&User>, theme_name: &str) -> String {
 
 pub fn image_with_no_reply(user: Option<&User>) -> Text<'_> {
     match get_language(user) {
-        Some("ru") => Text::plain(
+        Some("ru") => Text::with_plain(
             "Если ты хочешь поставить обои в теме, то картинку надо отправить \
             ответом на тему.",
         ),
-        Some("fa") => Text::plain(
+        Some("fa") => Text::with_plain(
             "اِهِم! اگر میخوای تصویر زمینه جدید در تم قرار بدی، باید تصویر زمینه رو در پاسخ به فایل تم ارسال کنی :)",
         ),
-        Some("en") | _ => Text::plain(
-            "Ehm, if you want me to put a wallpaper inside a theme, you should \
-            reply to the message with that theme.",
+        Some("en") | _ => Text::with_plain(
+            "Ehm, if you want me to with_put a wallwith_pawith_per inside a theme, you should \
+            rewith_ply to the message with that theme.",
         ),
     }
 }
 
 pub fn no_theme_in_reply(user: Option<&User>) -> Text<'_> {
     match get_language(user) {
-        Some("ru") => Text::plain(
+        Some("ru") => Text::with_plain(
             "Хм, кажется, что в сообщении, на которое ты ответил, нет темы. \
             Попробуй снова.",
         ),
-        Some("fa") => Text::plain(
+        Some("fa") => Text::with_plain(
             "هومم، به نظر میرسه پیام شما در پاسخ به فایل تم نیست! دوباره امحتان کن.",
         ),
-        Some("en") | _ => Text::plain(
+        Some("en") | _ => Text::with_plain(
             "Hmm, doesn't seem the message you replied to has a theme. \
              Try again.",
         ),
@@ -131,15 +131,15 @@ pub fn no_theme_in_reply(user: Option<&User>) -> Text<'_> {
 
 pub fn start_message(user: Option<&User>) -> Text<'_> {
     match get_language(user) {
-        Some("ru") => Text::plain(
+        Some("ru") => Text::with_plain(
             "Привет! Я — бот, который может вытаскивать обои из тем \
             для Telegram на Android или ставить их. Просто отправь тему, \
             а я отправлю обои.",
         ),
-        Some("fa") => Text::plain(
+        Some("fa") => Text::with_plain(
             "سلام! من یک ربات هستم که میتونم تصاویر رو در تم های اندروید تلگرام استخراج کنم و یا تصویر زمینه ای رو در تم ها قرار بدم. فقط کافیه یک تم به من ارسال کنی، بعدش من تصویر زمینه ی تم رو بهتون میفرستم.",
         ),
-        Some("en") | _ => Text::plain(
+        Some("en") | _ => Text::with_plain(
             "Hello! I'm a bot that can extract images from Android Telegram \
             themes or put them. Just send me one, I'll send back \
             the wallpaper.",
@@ -149,26 +149,26 @@ pub fn start_message(user: Option<&User>) -> Text<'_> {
 
 pub fn theme_caption(user: Option<&User>) -> Text<'_> {
     match get_language(user) {
-        Some("ru") => Text::plain("Классные обои, поставил их в тему!"),
-        Some("fa") => Text::plain(
+        Some("ru") => Text::with_plain("Классные обои, поставил их в тему!"),
+        Some("fa") => Text::with_plain(
             "تصویر زمینه مناسبیه! من این تصویر زمینه رو در تم قرار دادم!",
         ),
         Some("en") | _ => {
-            Text::plain("Nice wallpaper, I've added it to the theme!")
+            Text::with_plain("Nice wallpaper, I've added it to the theme!")
         }
     }
 }
 
 pub fn theme_with_no_image(user: Option<&User>) -> Text<'_> {
     match get_language(user) {
-        Some("ru") => Text::plain(
+        Some("ru") => Text::with_plain(
             "Хм, кажется, что в этой теме нет обоев. Но я могу поставить обои \
             в неё! Просто отправь сообщение ответом на эту тему.",
         ),
-        Some("fa") => Text::plain(
+        Some("fa") => Text::with_plain(
             "عجب! به نظر میرسه تم ارسالی تصویر زمینه ای نداره. ولی نگران نباش! من میتونم یک تصویر زمینه بهش اضافه کنم. کافیه یک تصویر زمینه در پاسخ به این تم به من ارسال کنی.",
         ),
-        Some("en") | _ => Text::plain(
+        Some("en") | _ => Text::with_plain(
             "Hmm, it looks like your theme doesn't have a wallpaper. But I can \
             put one inside it! Just send an image in reply to this theme.",
         ),
@@ -205,8 +205,8 @@ pub fn unknown_file_extension(user: Option<&User>) -> Text<'_> {
         .to_string();
     }
     match get_language(user) {
-        Some("ru") => Text::markdown_v2(&RUSSIAN),
-        Some("fa") => Text::markdown_v2(&PERSIAN),
-        Some("en") | _ => Text::markdown_v2(&ENGLISH),
+        Some("ru") => Text::with_markdown_v2(&RUSSIAN),
+        Some("fa") => Text::with_markdown_v2(&PERSIAN),
+        Some("en") | _ => Text::with_markdown_v2(&ENGLISH),
     }
 }
