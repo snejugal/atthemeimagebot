@@ -7,7 +7,7 @@ edition = "2018"
 [dependencies]
 dotenv = "0.15"
 tbot = { version = "0.6", default-features = false, features = ["rustls"] }
-tokio = { version = "0.2", features = ["macros"] }
+tokio = { version = "1.18", features = ["macros"] }
 lazy_static = "1.4"
 attheme = "0.3"
 image = "0.23"
